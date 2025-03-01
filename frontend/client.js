@@ -8,7 +8,7 @@ if (!username) {
 }
 console.log("Using username:", username);
 
-const ws = new WebSocket("ws://localhost:8000/ws");
+const ws = new WebSocket("wss://chat-app-2vth.onrender.com/ws");
 
 ws.onopen = () => {
     console.log("✅ Connected to server");
