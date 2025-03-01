@@ -1,4 +1,7 @@
+import os
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from typing import List
 from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
@@ -7,13 +10,43 @@ import datetime
 
 app = FastAPI()
 
-# Database setup
+# ---------------------------
+# Serve Frontend Files Separately
+# ---------------------------
+# Assumes your project structure:
+# chat-app/
+# ├── backend/
+# │   └── main.py
+# └── frontend/
+#    ├── index.html
+#    ├── client.js
+#    └── style.css (optional)
+
+# Calculate absolute path to the frontend folder.
+current_dir = os.path.dirname(os.path.abspath(__file__))
+frontend_path = os.path.join(current_dir, "..", "frontend")
+
+# GET endpoint to serve the index.html at the root URL.
+@app.get("/")
+async def get_index():
+    return FileResponse(os.path.join(frontend_path, "index.html"))
+
+# Mount static files (assets) at /static (for client.js, style.css, etc.)
+app.mount("/static", StaticFiles(directory=frontend_path), name="static")
+
+# Optional API endpoint for testing
+@app.get("/api/hello")
+def read_root():
+    return {"message": "Hello, your API is live!"}
+
+# ---------------------------
+# Database Setup with SQLAlchemy
+# ---------------------------
 DATABASE_URL = "sqlite:///./chat.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# Chat message model
 class ChatMessage(Base):
     __tablename__ = "messages"
     id = Column(Integer, primary_key=True, index=True)
@@ -23,45 +56,51 @@ class ChatMessage(Base):
 
 Base.metadata.create_all(bind=engine)
 
-# WebSocket connection manager
+# ---------------------------
+# WebSocket Connection Manager
+# ---------------------------
 class ConnectionManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
-
+    
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.active_connections.append(websocket)
-
+    
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
-
+    
     async def broadcast(self, message: str):
         for connection in self.active_connections:
             await connection.send_text(message)
 
 manager = ConnectionManager()
 
+# ---------------------------
+# WebSocket Endpoint for Chat
+# ---------------------------
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     db = SessionLocal()
-
+    
     # Send chat history on connection
     messages = db.query(ChatMessage).order_by(ChatMessage.timestamp).all()
     for msg in messages:
         await websocket.send_text(f"{msg.timestamp} {msg.sender}: {msg.content}")
-
+    
     try:
         while True:
             data = await websocket.receive_text()
-            sender, content = data.split(":", 1)  # Format: "user:message"
-
+            # Expected format: "username: message"
+            sender, content = data.split(":", 1)
+            
             # Save message to database
             chat_message = ChatMessage(sender=sender.strip(), content=content.strip())
             db.add(chat_message)
             db.commit()
-
-            # Broadcast message to all clients
+            
+            # Broadcast the new message to all connected clients
             await manager.broadcast(f"{chat_message.timestamp} {chat_message.sender}: {chat_message.content}")
     except WebSocketDisconnect:
         manager.disconnect(websocket)
