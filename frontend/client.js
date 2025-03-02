@@ -50,3 +50,19 @@ function changeUsername() {
         alert("Invalid username. Username not updated.");
     }
 }
+
+function clearChat() {
+    fetch("http://127.0.0.1:8000/api/clear", { method: "DELETE" })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(data.message);
+            document.getElementById("chat").innerHTML = ""; // ✅ Clear UI messages
+        })
+        .catch(error => console.error("❌ Error clearing chat:", error));
+}
+
