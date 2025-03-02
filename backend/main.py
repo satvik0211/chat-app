@@ -6,41 +6,48 @@ from typing import List
 from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from fastapi.middleware.cors import CORSMiddleware
 import datetime
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all frontend URLs (use specific URLs in production)
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, DELETE, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
+
 # ---------------------------
-# Serve Frontend Files Separately
+# Serve Frontend Files
 # ---------------------------
-# Assumes your project structure:
+# Assumes project structure:
 # chat-app/
 # ├── backend/
 # │   └── main.py
 # └── frontend/
-#    ├── index.html
-#    ├── client.js
-#    └── style.css (optional)
-
-# Calculate absolute path to the frontend folder.
+#     ├── index.html
+#     ├── client.js
+#     └── style.css (optional)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 frontend_path = os.path.join(current_dir, "..", "frontend")
 
-# GET endpoint to serve the index.html at the root URL.
+# Serve index.html at the root URL
 @app.get("/")
 async def get_index():
     return FileResponse(os.path.join(frontend_path, "index.html"))
 
-# Mount static files (assets) at /static (for client.js, style.css, etc.)
+# Mount static assets (client.js, style.css, etc.) at /static
 app.mount("/static", StaticFiles(directory=frontend_path), name="static")
 
-# Optional API endpoint for testing
+# Optional test API endpoint
 @app.get("/api/hello")
 def read_root():
     return {"message": "Hello, your API is live!"}
 
 # ---------------------------
-# Database Setup with SQLAlchemy
+# Database Setup
 # ---------------------------
 DATABASE_URL = "sqlite:///./chat.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
@@ -68,7 +75,8 @@ class ConnectionManager:
         self.active_connections.append(websocket)
     
     def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
     
     async def broadcast(self, message: str):
         for connection in self.active_connections:
@@ -100,9 +108,23 @@ async def websocket_endpoint(websocket: WebSocket):
             db.add(chat_message)
             db.commit()
             
-            # Broadcast the new message to all connected clients
+            # Broadcast message to all connected clients
             await manager.broadcast(f"{chat_message.timestamp} {chat_message.sender}: {chat_message.content}")
     except WebSocketDisconnect:
         manager.disconnect(websocket)
     finally:
         db.close()
+
+# ---------------------------
+# Clear Chat Endpoint
+# ---------------------------
+@app.delete("/api/clear")
+async def clear_chat():
+    db = SessionLocal()
+    db.query(ChatMessage).delete()
+    db.commit()
+    db.close()
+    
+    await manager.broadcast("clear_chat")  # Notify all clients
+    return {"message": "Chat cleared"}
+
