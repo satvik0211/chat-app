@@ -58,7 +58,7 @@ function changeUsername() {
     }
 }
 
-ffunction clearChat() {
+function clearChat() {
     fetch("https://chat-app-2vth.onrender.com/api/clear", { method: "DELETE" })
         .then(response => {
             if (!response.ok) {
