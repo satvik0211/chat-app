@@ -16,8 +16,15 @@ ws.onopen = () => {
 
 ws.onmessage = (event) => {
     console.log("📩 Received:", event.data);
-    addMessage(event.data);
+
+    if (event.data === "clear_chat") {
+        console.log("🧹 Clearing chat on all devices...");
+        document.getElementById("chat").innerHTML = ""; // ✅ Clear chat for all devices
+    } else {
+        addMessage(event.data);
+    }
 };
+
 
 function sendMessage() {
     const input = document.getElementById("messageInput");
@@ -51,8 +58,8 @@ function changeUsername() {
     }
 }
 
-function clearChat() {
-    fetch("http://127.0.0.1:8000/api/clear", { method: "DELETE" })
+ffunction clearChat() {
+    fetch("https://chat-app-2vth.onrender.com/api/clear", { method: "DELETE" })
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -60,9 +67,10 @@ function clearChat() {
             return response.json();
         })
         .then(data => {
-            console.log(data.message);
-            document.getElementById("chat").innerHTML = ""; // ✅ Clear UI messages
+            console.log("✅ Chat cleared:", data.message);
+            document.getElementById("chat").innerHTML = ""; // ✅ Clear chat on mobile
         })
         .catch(error => console.error("❌ Error clearing chat:", error));
 }
+
 
