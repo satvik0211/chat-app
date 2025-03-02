@@ -87,33 +87,7 @@ manager = ConnectionManager()
 # ---------------------------
 # WebSocket Endpoint for Chat
 # ---------------------------
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
-    db = SessionLocal()
-    
-    # Send chat history on connection
-    messages = db.query(ChatMessage).order_by(ChatMessage.timestamp).all()
-    for msg in messages:
-        await websocket.send_text(f"{msg.timestamp} {msg.sender}: {msg.content}")
-    
-    try:
-        while True:
-            data = await websocket.receive_text()
-            # Expected format: "username: message"
-            sender, content = data.split(":", 1)
-            
-            # Save message to database
-            chat_message = ChatMessage(sender=sender.strip(), content=content.strip())
-            db.add(chat_message)
-            db.commit()
-            
-            # Broadcast message to all connected clients
-            await manager.broadcast(f"{chat_message.timestamp} {chat_message.sender}: {chat_message.content}")
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
-    finally:
-        db.close()
+https://chat-app-2vth.onrender.com
 
 # ---------------------------
 # Clear Chat Endpoint
