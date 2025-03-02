@@ -121,10 +121,13 @@ async def websocket_endpoint(websocket: WebSocket):
 @app.delete("/api/clear")
 async def clear_chat():
     db = SessionLocal()
-    db.query(ChatMessage).delete()
-    db.commit()
-    db.close()
-    
-    await manager.broadcast("clear_chat")  # Notify all clients
+    try:
+        db.query(ChatMessage).delete()
+        db.commit()  # ✅ Ensure database commit before closing
+    finally:
+        db.close()
+
+    await manager.broadcast("clear_chat")  # ✅ Notify all clients to clear chat UI
     return {"message": "Chat cleared"}
+
 
