@@ -94,6 +94,7 @@ body {
     color: white;
     cursor: pointer;
     transition: 0.3s;
+    margin: 5px
 }
 
 .chat-container button:hover {
@@ -110,4 +111,10 @@ body {
 
 input[type="text"] {
     font-size: 16px; /* Prevents zooming */
+}
+
+.chat-container input#messageInput{
+    margin: 10px;
+    padding: 12px;
+    border-radius: 8px;
 }
