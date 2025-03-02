@@ -115,4 +115,8 @@ async def clear_chat():
     await manager.broadcast("clear_chat")  # ✅ Notify all clients to clear chat UI
     return {"message": "Chat cleared"}
 
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))  # ✅ Use Render's PORT environment variable
+    uvicorn.run(app, host="0.0.0.0", port=port)
+
 
