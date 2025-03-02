@@ -87,7 +87,6 @@ manager = ConnectionManager()
 # ---------------------------
 # WebSocket Endpoint for Chat
 # ---------------------------
-https://chat-app-2vth.onrender.com
 
 # ---------------------------
 # Clear Chat Endpoint
