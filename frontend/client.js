@@ -31,9 +31,7 @@ function sendMessage() {
     const message = input.value.trim();
     if (message) {
         const fullMessage = `${username}: ${message}`;
-        ws.send(fullMessage);
-        console.log("📤 Sent:", fullMessage);
-        addMessage(fullMessage);
+        ws.send(fullMessage); // ✅ Just send, don't add message here
         input.value = "";
     }
 }
