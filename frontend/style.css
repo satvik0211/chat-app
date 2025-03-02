@@ -1,24 +1,27 @@
-/* General Styles */
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+/* General Body Styling */
 body {
-    font-family: 'Poppins', sans-serif;
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    font-family: 'Inter', sans-serif;
+    background: #1a1a2e;
+    color: white;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
+    margin: 0;
 }
 
 /* Chat Container */
 .chat-container {
     width: 90%;
-    max-width: 400px;
-    height: 80vh;
-    background: white;
+    max-width: 450px;
+    height: 85vh;
+    background: #16213e;
     padding: 20px;
     border-radius: 15px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -28,30 +31,35 @@ body {
 .chat-box {
     flex: 1;
     overflow-y: auto;
-    border-radius: 10px;
     padding: 15px;
-    background: #f1f1f1;
-    font-size: 16px;
+    border-radius: 10px;
+    background: #0f3460;
     display: flex;
     flex-direction: column;
 }
 
-/* Individual Message Styling */
+/* Messages */
 .message {
-    background: #667eea;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 10px;
-    margin-bottom: 10px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    border-radius: 18px;
     max-width: 75%;
+    word-wrap: break-word;
 }
 
-.message.user {
+/* Received Messages */
+.message.received {
+    background: #e94560;
+    align-self: flex-start;
+}
+
+/* Sent Messages */
+.message.sent {
+    background: #1abc9c;
     align-self: flex-end;
-    background: #4CAF50;
 }
 
-/* Input Area */
+/* Input Box */
 .input-container {
     display: flex;
     gap: 10px;
@@ -66,6 +74,7 @@ body {
     border-radius: 8px;
     outline: none;
     background: #e8e8e8;
+    color: black;
 }
 
 .input-container button {
@@ -73,20 +82,20 @@ body {
     font-size: 16px;
     border: none;
     border-radius: 8px;
-    background: #667eea;
+    background: #e94560;
     color: white;
     cursor: pointer;
     transition: 0.3s;
 }
 
 .input-container button:hover {
-    background: #764ba2;
+    background: #ff6f91;
 }
 
 /* Mobile Responsive */
 @media screen and (max-width: 768px) {
     .chat-container {
         width: 95%;
-        height: 85vh;
+        height: 90vh;
     }
 }
