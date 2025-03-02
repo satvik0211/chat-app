@@ -38,9 +38,15 @@ function sendMessage() {
 
 function addMessage(text) {
     const chat = document.getElementById("chat");
+    if (!chat) {
+        console.error("❌ Error: 'chat' element not found!");
+        return;
+    }
+
     const msg = document.createElement("p");
     msg.textContent = text;
     chat.appendChild(msg);
+    chat.scrollTop = chat.scrollHeight; // Auto-scroll to the latest message
 }
 
 // Function to change username only in the current tab
