@@ -89,13 +89,17 @@ manager = ConnectionManager()
 # ---------------------------
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
+    await manager.connect(websocket)
     try:
         while True:
             data = await websocket.receive_text()
-            await websocket.send_text(f"Message received: {data}")
+            sender, content = data.split(":", 1)
+
+            # ✅ Broadcast message to all connected clients
+            full_message = f"{sender.strip()}: {content.strip()}"
+            await manager.broadcast(full_message)
     except WebSocketDisconnect:
-        print("Client disconnected")
+        manager.disconnect(websocket)
 # ---------------------------
 # Clear Chat Endpoint
 # ---------------------------
